@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Web版斗地主 - 精美UI版</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap" rel="stylesheet">
+    <title>斗地主 - 极致精致版</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@500;700&family=Play:wght@700&display=swap" rel="stylesheet">
     <style>
-        /* === 1. 全局与背景优化 === */
+        /* === 1. 全局与精致背景 === */
         body {
-            background: linear-gradient(135deg, #1f2833 0%, #0b0c0f 100%);
-            font-family: 'Roboto', Arial, sans-serif;
+            background: #1e1e1e; /* 纯黑背景 */
+            font-family: 'Noto Sans SC', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -17,159 +17,194 @@
             margin: 0;
             overflow: hidden;
             touch-action: manipulation;
-            color: #ccc;
+            color: #f0f0f0;
         }
 
         #game-container {
-            width: 98%;
-            max-width: 800px;
-            height: 98%;
-            background-color: #3e8e41;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9);
+            width: 100%;
+            height: 100%;
+            max-width: 850px; /* 限制桌面宽度 */
+            max-height: 900px; /* 限制桌面高度 */
+            background-image: radial-gradient(#3a733a, #2c592c); /* 绿色绒布渐变 */
+            border-radius: 0;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.9);
             padding: 10px;
-            transform: perspective(1000px) rotateX(8deg) rotateZ(1deg); 
-            transition: transform 0.5s ease;
+            position: relative;
+            
+            /* 立体倾斜效果，模拟桌面视角 */
+            transform: perspective(1200px) rotateX(10deg) rotateZ(0deg); 
         }
-        
+
         /* --- 2. 桌面布局 --- */
         #game-board {
             display: grid;
             grid-template-areas:
-                "top-center top-center"
-                "west-play right-play" 
-                "center-play center-play"; 
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: 1.2fr 1fr 1fr;
-            height: calc(100% - 130px);
-            padding: 5px;
+                "north-play north-info" 
+                "west-info center east-info" 
+                "west-play center east-play"
+                "bottom-cards bottom-cards";
+            grid-template-columns: 1fr 2fr 1fr;
+            grid-template-rows: 1fr 1fr 2fr 0.5fr;
+            height: calc(100% - 150px); /* 减去底部控制区 */
+            padding: 0;
         }
 
-        #top-center {
-            grid-area: top-center;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            height: 100%;
-        }
-        
-        #bottom-cards { display: flex; gap: 3px; align-items: center; }
-
+        /* 电脑玩家信息（牌数/角色） */
         .computer-hand {
-            color: #e0e0e0;
-            font-size: 15px;
-            background-color: rgba(0, 0, 0, 0.4);
-            border: 2px solid #5a5a5a;
-            padding: 8px 12px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-            display: inline-flex;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 700;
+            background-color: rgba(0, 0, 0, 0.6);
+            border: 2px solid #555;
+            padding: 5px 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.7);
+            display: flex;
             flex-direction: column;
             align-items: center;
-            z-index: 10; /* 确保在最上层 */
+            justify-content: center;
+            margin: 5px;
+        }
+
+        /* 电脑信息区定位 */
+        #player-north-info { grid-area: north-info; display: flex; justify-content: flex-start; align-items: center; }
+        #player-west-info { grid-area: west-info; display: flex; justify-content: flex-start; align-items: center; }
+        #player-east-info { grid-area: east-info; display: flex; justify-content: flex-end; align-items: center; }
+
+        /* 出牌区域 (居中紧凑) */
+        #played-area-center { grid-area: center; display: flex; flex-direction: column; justify-content: space-around; align-items: center; }
+        
+        #player-north-play { display: flex; justify-content: flex-end; align-items: center; grid-area: north-play; }
+        #player-west-play { display: flex; justify-content: flex-start; align-items: center; grid-area: west-play; padding-left: 10px; }
+        #player-east-play { display: flex; justify-content: flex-end; align-items: center; grid-area: east-play; padding-right: 10px; }
+        #player-south-play { 
+            position: absolute; 
+            bottom: 120px; /* 位于手牌上方 */
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: -20px;
         }
         
-        #player-west-hand { position: absolute; top: 30%; left: 10px; }
-        #player-east-hand { position: absolute; top: 30%; right: 10px; }
-        
-        #player-west-play { grid-area: west-play; display: flex; justify-content: flex-start; align-items: flex-end; padding-left: 20px; }
-        #player-east-play { grid-area: right-play; display: flex; justify-content: flex-end; align-items: flex-end; padding-right: 20px; }
-        #player-south-play { grid-area: center-play; display: flex; justify-content: center; align-items: flex-start; padding-top: 10px; }
+        .played-cards {
+            min-height: 50px;
+            min-width: 50px;
+            display: flex;
+            gap: -25px;
+        }
 
-        /* --- 3. 卡牌样式优化 --- */
-        .card-area { display: flex; gap: -20px; }
+        /* 底牌区 */
+        #bottom-cards-container { grid-area: bottom-cards; display: flex; justify-content: flex-end; align-items: center; gap: 5px; padding-right: 20px;}
 
+        /* --- 3. 卡牌样式与扇形手牌（手机优化） --- */
         .card {
-            width: 50px; 
-            height: 75px;
-            background-color: #fcfcfc;
-            border: 1px solid #444;
-            border-radius: 6px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), inset 0 0 5px rgba(255, 255, 255, 0.5);
+            width: 48px; 
+            height: 72px;
+            background-color: #fff;
+            border: 1px solid #333;
+            border-radius: 4px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5), inset 0 0 5px rgba(255, 255, 255, 0.8);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 4px;
-            font-size: 18px;
+            padding: 3px;
+            font-family: 'Play', sans-serif;
+            font-size: 16px;
             font-weight: 700;
             cursor: pointer;
-            transition: transform 0.15s, box-shadow 0.15s;
+            transition: transform 0.15s, box-shadow 0.15s, margin-top 0.15s;
             position: relative;
+            transform-origin: bottom center; /* 扇形旋转基点 */
         }
 
-        .card.red { color: #d00000; }
+        .card.red { color: #cc0000; }
         .card.black { color: #000000; }
         .card.back {
-            background: linear-gradient(45deg, #0056b3, #007bff);
+            background: linear-gradient(135deg, #0056b3, #003a7a);
             color: #fff;
             font-size: 12px;
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
             padding: 0;
             justify-content: center;
             align-items: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.8);
         }
 
-        .card .rank { line-height: 1; }
-        .card .suit { font-size: 10px; align-self: flex-end; transform: rotate(180deg); }
-
-        /* 玩家手牌区 */
+        /* 玩家手牌区 (扇形排列的容器) */
         #player-south-controls {
-            height: 130px;
-            background-color: rgba(0, 0, 0, 0.3);
-            border-top: 2px solid #5a5a5a;
-            border-radius: 0 0 15px 15px;
-            padding: 5px 0;
-            display: flex; /* 使用 flex 布局 */
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 150px;
+            background-color: rgba(10, 10, 10, 0.9);
+            border-top: 3px solid #5a5a5a;
+            display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: space-around;
+            z-index: 20;
+        }
+        
+        #south-hand-wrapper {
+            display: flex;
             justify-content: center;
+            height: 80px;
+            overflow: visible; /* 允许卡牌旋转出界 */
+            padding-top: 20px;
         }
 
-        #south-hand { gap: -30px; padding: 0 10px; }
-
-        #south-hand .card:hover { transform: translateY(-12px); }
-        #south-hand .card.selected { 
-            transform: translateY(-25px); 
-            border: 3px solid #ffcc00;
-            box-shadow: 0 8px 15px rgba(255, 204, 0, 0.5);
+        /* 扇形手牌核心 CSS */
+        #south-hand .card {
+            margin-left: -20px; /* 重叠 */
+            transition: transform 0.2s, box-shadow 0.2s, margin-top 0.2s;
+            z-index: 1; /* 确保选中状态下z-index提高 */
+        }
+        
+        #south-hand .card.rotated {
+            margin-left: -20px;
         }
 
-        /* 修复重点：确保按钮居中且不会被挤压 */
+        #south-hand .card.selected {
+            transform: translateY(-20px);
+            border: 3px solid #ffaa00;
+            box-shadow: 0 5px 15px rgba(255, 170, 0, 0.8);
+            z-index: 100;
+        }
+
+        /* --- 4. 按钮和状态信息 --- */
         #controls {
             display: flex;
-            gap: 10px;
+            gap: 15px;
             justify-content: center; 
             align-items: center;
-            margin-top: 5px; 
-            min-height: 40px; /* 确保按钮有足够的空间 */
+            padding: 5px 0;
         }
 
         .control-btn {
-            padding: 8px 18px;
-            font-size: 14px;
+            padding: 10px 20px;
+            font-size: 15px;
             font-weight: 700;
-            background-color: #ffcc00;
-            color: #333;
+            background-color: #ffaa00; /* 亮眼橙色 */
+            color: #1e1e1e;
             border: none;
-            border-radius: 20px;
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+            border-radius: 25px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: background-color 0.2s, transform 0.1s;
         }
-        .control-btn:hover:not(:disabled) { background-color: #ffdd44; }
-        .control-btn:disabled { background-color: #777; color: #bbb; cursor: not-allowed; }
-        
+        .control-btn:active:not(:disabled) { transform: translateY(1px); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); }
+        .control-btn:disabled { background-color: #555; color: #aaa; cursor: not-allowed; }
+
+        #status-message { 
+            color: #fff; 
+            text-shadow: 0 0 5px #ffaa00;
+            font-size: 16px;
+        }
+
         .current-turn-indicator {
             border: 3px solid #ff0077;
             box-shadow: 0 0 10px #ff0077;
-        }
-        
-        .played-cards {
-            min-height: 40px;
-            min-width: 40px;
-            display: flex;
-            gap: -25px;
-            text-shadow: 0 0 5px #000;
         }
     </style>
 </head>
@@ -177,32 +212,36 @@
     <div id="game-container">
         <div id="game-board">
             
-            <div id="top-center">
-                <div id="player-north-hand" class="computer-hand">北家 (17 张)</div>
-                <div id="bottom-cards">
-                    <div class="card back">底</div>
-                    <div class="card back">牌</div>
-                    <div class="card back">区</div>
-                </div>
-            </div>
-            
-            <div id="player-west-hand" class="computer-hand">西家 (17 张)</div>
-            <div id="player-east-hand" class="computer-hand">东家 (17 张)</div>
+            <div id="player-north-info" class="computer-hand">北家 (农民)</div>
+            <div id="player-west-info" class="computer-hand">西家 (农民)</div>
+            <div id="player-east-info" class="computer-hand">东家 (农民)</div>
 
+            <div id="player-north-play" class="played-cards"></div>
             <div id="player-west-play" class="played-cards"></div>
             <div id="player-east-play" class="played-cards"></div>
+
+            <div id="played-area-center">
+                <div id="player-south-play" class="played-cards"></div>
+            </div>
             
-            <div id="player-south-play" class="played-cards"></div>
-            <div id="player-north-play" class="played-cards" style="display:none;"></div>
+            <div id="bottom-cards-container">
+                <div class="card back">底</div>
+                <div class="card back">牌</div>
+                <div class="card back">区</div>
+            </div>
+            
         </div>
 
         <div id="player-south-controls">
-            <div id="status-message" style="color: #ffcc00; margin-bottom: 5px; font-size: 15px;">点击 “叫地主” 开始游戏！</div>
-            <div id="south-hand" class="card-area">
-                </div>
+            <div id="status-message">点击 “叫地主” 开始游戏！</div>
+            
+            <div id="south-hand-wrapper">
+                <div id="south-hand" class="card-area">
+                    </div>
+            </div>
             
             <div id="controls">
-                <button id="btn-call-landlord" class="control-btn" style="display:inline-block;">叫地主</button>
+                <button id="btn-call-landlord" class="control-btn">叫地主</button>
                 <button id="btn-pass" class="control-btn" disabled style="display:none;">不出</button>
                 <button id="btn-tip" class="control-btn" disabled style="display:none;">提示</button>
                 <button id="btn-play" class="control-btn" disabled style="display:none;">出牌</button>
@@ -211,29 +250,25 @@
     </div>
 
     <script>
-        // === SCRIPT: 游戏逻辑 (保持不变) ===
+        // === SCRIPT: 游戏逻辑 (新增扇形布局处理) ===
         
         const RANKS = { 11: 'J', 12: 'Q', 13: 'K', 14: 'A', 15: '2', 16: 'w', 17: 'W' };
         const SUITS_MAP = { 'S': '♠', 'H': '♥', 'D': '♦', 'C': '♣' };
         const SUITS = ['S', 'H', 'D', 'C'];
+        const PLAYER_IDS = ['south', 'east', 'north']; // 3人游戏
         
         const TYPE = {
             SINGLE: 1, PAIR: 2, TRIPLET: 3, TRIPLET_SINGLE: 4, BOMB: 11, ROCKET: 12, INVALID: 0
         };
 
         let GAME_STATE = {
-            hands: { south: [], east: [], north: [], west: [] },
+            hands: { south: [], east: [], north: [] },
             deck: [],
             bottomCards: [],
             playerOrder: [],
             currentPlayerIndex: 0,
             landlord: null,
-            lastPlayed: {
-                player: null,
-                cards: [],
-                type: TYPE.INVALID,
-                mainValue: 0
-            },
+            lastPlayed: { player: null, cards: [], type: TYPE.INVALID, mainValue: 0 },
             passCount: 0 
         };
 
@@ -241,7 +276,7 @@
         const statusMessageEl = document.getElementById('status-message');
         const btnCallLandlord = document.getElementById('btn-call-landlord');
         const btnPass = document.getElementById('btn-pass');
-        const btnTip = document.getElementById('btn-tip'); // 获取提示按钮
+        const btnTip = document.getElementById('btn-tip'); 
         const btnPlay = document.getElementById('btn-play');
 
         // --- 核心卡牌/校验函数 (保持与上一版本一致) ---
@@ -313,7 +348,7 @@
         // --- 核心卡牌/校验函数结束 ---
 
 
-        // --- 界面更新函数 ---
+        // --- 界面更新函数 (新增扇形手牌渲染) ---
         function getCardRank(value) { return RANKS[value] || String(value); }
 
         function createCardElement(card, isSelectable = false) {
@@ -321,53 +356,71 @@
             cardEl.className = `card ${card.isRed ? 'red' : 'black'}`;
             cardEl.dataset.value = card.value;
             cardEl.dataset.suit = card.suit;
-            cardEl.innerHTML = `<div class="rank">${getCardRank(card.value)}</div>`;
+            cardEl.innerHTML = `<div class="rank">${getCardRank(card.value)}</div><div class="suit">${card.suit.length === 1 ? SUITS_MAP[card.suit] : ''}</div>`;
             
-            if (card.suit && card.suit.length === 1) {
-                cardEl.innerHTML += `<div class="suit">${SUITS_MAP[card.suit]}</div>`;
-            }
-
             if (isSelectable) {
                 cardEl.addEventListener('click', () => { cardEl.classList.toggle('selected'); });
             }
             return cardEl;
         }
 
+        /** 渲染玩家手牌，并应用扇形布局 */
         function renderHand() {
             southHandEl.innerHTML = '';
             GAME_STATE.hands.south.sort((a, b) => a.value - b.value);
 
-            GAME_STATE.hands.south.forEach(card => {
+            const totalCards = GAME_STATE.hands.south.length;
+            const maxAngle = 40; // 最大扇形角度
+            const startAngle = -maxAngle / 2;
+            const angleStep = totalCards > 1 ? maxAngle / (totalCards - 1) : 0;
+
+            GAME_STATE.hands.south.forEach((card, index) => {
                 const cardEl = createCardElement(card, true);
+                const rotation = startAngle + index * angleStep;
+                
+                // 应用旋转和微调，实现扇形效果
+                cardEl.style.transform = `rotate(${rotation}deg) translateY(-${Math.abs(rotation) / 4}px)`;
+                
+                // 确保被选中的牌在顶部不会有旋转
+                cardEl.addEventListener('click', () => {
+                    if (cardEl.classList.contains('selected')) {
+                        // 选中时，去除旋转效果，改为纯粹的Y轴位移
+                        cardEl.style.transform = 'translateY(-25px)';
+                    } else {
+                        // 取消选中时，恢复扇形旋转
+                        cardEl.style.transform = `rotate(${rotation}deg) translateY(-${Math.abs(rotation) / 4}px)`;
+                    }
+                });
+
                 southHandEl.appendChild(cardEl);
             });
         }
 
         function renderComputerHandCounts() {
-            // 只需要渲染 north, east
-            for (const player of ['north', 'east']) {
-                const count = GAME_STATE.hands[player].length;
-                const el = document.getElementById(`player-${player}-hand`);
+            for (const player of PLAYER_IDS) {
+                if (player === 'south') continue;
+                
+                const count = GAME_STATE.hands[player] ? GAME_STATE.hands[player].length : 0;
+                const el = document.getElementById(`player-${player}-info`);
+                if (!el) continue;
+
                 const role = player === GAME_STATE.landlord ? '地主' : 
-                             GAME_STATE.landlord ? '农民' : '';
-                el.innerHTML = `<div>${player.toUpperCase()}家 (${role})</div><div>${count} 张</div>`;
+                             GAME_STATE.landlord ? '农民' : '玩家';
+                el.innerHTML = `<div>${player.toUpperCase()} (${role})</div><div>${count} 张</div>`;
             }
-            // 隐藏 West 玩家 (因为是 3 人游戏)
-            document.getElementById('player-west-hand').style.display = 'none';
+            // 隐藏 West 区域（如果存在）
+            const westEl = document.getElementById('player-west-info');
+            if(westEl) westEl.style.display = 'none';
         }
         
         function renderPlayedCards(player, cards) {
-            // 确保只渲染 south, east, north
-            if (!['south', 'east', 'north'].includes(player)) return;
-            
             const playedAreaEl = document.getElementById(`player-${player}-play`);
             if (!playedAreaEl) return; 
 
             playedAreaEl.innerHTML = '';
 
             if (cards.length === 0) {
-                // 如果是“不出”，显示文本
-                playedAreaEl.innerHTML = `<div style="color:#ffcc00; font-weight:700;">不出</div>`;
+                playedAreaEl.innerHTML = `<div style="color:#ffcc00; font-weight:700; background:rgba(0,0,0,0.5); padding:3px 8px; border-radius:4px;">不出</div>`;
                 return;
             }
             playedAreaEl.textContent = '';
@@ -385,7 +438,6 @@
             
             const currentPlayer = GAME_STATE.playerOrder[GAME_STATE.currentPlayerIndex];
             
-            // 仅对 south, east, north 设置指示器
             if (currentPlayer === 'south') {
                 document.getElementById('player-south-controls').classList.add('current-turn-indicator');
                 const isMyTurnToPlay = GAME_STATE.lastPlayed.player === null || GAME_STATE.passCount === (GAME_STATE.playerOrder.length - 1);
@@ -394,7 +446,7 @@
                 btnPlay.disabled = false;
                 btnTip.disabled = false;
             } else if (['east', 'north'].includes(currentPlayer)) {
-                document.getElementById(`player-${currentPlayer}-hand`).classList.add('current-turn-indicator');
+                document.getElementById(`player-${currentPlayer}-info`).classList.add('current-turn-indicator');
                 btnPass.disabled = true;
                 btnPlay.disabled = true;
                 btnTip.disabled = true;
@@ -405,7 +457,7 @@
 
         function checkWin() {
             const currentPlayer = GAME_STATE.playerOrder[GAME_STATE.currentPlayerIndex];
-            if (GAME_STATE.hands[currentPlayer].length === 0) {
+            if (GAME_STATE.hands[currentPlayer] && GAME_STATE.hands[currentPlayer].length === 0) {
                 const role = currentPlayer === GAME_STATE.landlord ? '地主' : '农民';
                 alert(`${currentPlayer.toUpperCase()} (${role}) 获胜! 游戏结束。`);
                 return true;
@@ -418,17 +470,13 @@
 
         function startGame() {
             GAME_STATE = { 
-                hands: { south: [], east: [], north: [], west: [] }, deck: createDeck(), bottomCards: [], playerOrder: [],
+                hands: { south: [], east: [], north: [] }, deck: createDeck(), bottomCards: [], playerOrder: [],
                 currentPlayerIndex: 0, landlord: null, lastPlayed: { player: null, cards: [], type: TYPE.INVALID, mainValue: 0 },
                 passCount: 0
             };
             shuffle(GAME_STATE.deck);
 
             // 3人模式发牌: south, east, north
-            GAME_STATE.hands = { south: [], east: [], north: [] }; 
-            GAME_STATE.deck = createDeck();
-            shuffle(GAME_STATE.deck);
-
             for (let i = 0; i < 17; i++) {
                 GAME_STATE.hands.south.push(GAME_STATE.deck.pop());
                 GAME_STATE.hands.east.push(GAME_STATE.deck.pop());
@@ -440,7 +488,7 @@
             renderHand();
             renderComputerHandCounts();
             
-            const bottomCardsEl = document.getElementById('bottom-cards');
+            const bottomCardsEl = document.getElementById('bottom-cards-container');
             bottomCardsEl.innerHTML = '<div class="card back">底</div><div class="card back">牌</div><div class="card back">区</div>';
 
             statusMessageEl.textContent = '点击 “叫地主” 开始游戏！';
@@ -464,13 +512,13 @@
             
             GAME_STATE.hands[player].push(...GAME_STATE.bottomCards);
             
-            const bottomCardsEl = document.getElementById('bottom-cards');
+            const bottomCardsEl = document.getElementById('bottom-cards-container');
             bottomCardsEl.innerHTML = '';
             GAME_STATE.bottomCards.forEach(card => bottomCardsEl.appendChild(createCardElement(card)));
 
             GAME_STATE.currentPlayerIndex = GAME_STATE.playerOrder.indexOf(player);
             
-            renderHand();
+            renderHand(); // 重新渲染手牌（牌更多了）
             renderComputerHandCounts();
             
             // 切换按钮可见性
@@ -529,7 +577,12 @@
                 nextTurn();
             } else {
                 statusMessageEl.textContent = '牌型不合法或不能打过上家！';
-                selectedCardsEl.forEach(el => el.classList.remove('selected'));
+                selectedCardsEl.forEach(el => {
+                    el.classList.remove('selected');
+                    // 恢复扇形位置
+                    const rotation = parseFloat(el.style.transform.match(/rotate\(([^)]+)/)[1]);
+                    el.style.transform = `rotate(${rotation}deg) translateY(-${Math.abs(rotation) / 4}px)`;
+                });
             }
         }
 
@@ -545,13 +598,7 @@
             nextTurn();
         }
 
-        function nextTurn() {
-            GAME_STATE.currentPlayerIndex = (GAME_STATE.currentPlayerIndex + 1) % GAME_STATE.playerOrder.length;
-            updateTurnIndicator();
-        }
-
-        // --- 6. 电脑 AI 模拟 ---
-
+        // --- 6. 电脑 AI 模拟 (保持不变) ---
         function computerPlay() {
             const player = GAME_STATE.playerOrder[GAME_STATE.currentPlayerIndex];
             const currentHand = GAME_STATE.hands[player];
@@ -629,6 +676,8 @@
         btnCallLandlord.addEventListener('click', handleCallLandlord);
         btnPlay.addEventListener('click', handlePlayCards);
         btnPass.addEventListener('click', handlePass);
+        // 提示按钮暂无功能，但保持结构
+        btnTip.addEventListener('click', () => { statusMessageEl.textContent = '提示功能待完善...请自行选择牌型。'; });
 
         startGame();
     </script>
