@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>斗地主 - V3 扇形与逻辑修复版</title>
+    <title>斗地主 - V4 最终修正版</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
             --card-width: 56px;
             --card-height: 84px;
             --primary-color: #ffb800;
-            --table-bg: #2d5a3f;
         }
 
         * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -58,6 +57,7 @@
             border-radius: 8px;
             padding: 5px;
             border: 1px solid rgba(255,255,255,0.1);
+            transition: border 0.3s, box-shadow 0.3s;
         }
         .player-avatar.left { left: 10px; }
         .player-avatar.right { right: 10px; }
@@ -93,7 +93,6 @@
 
         /* === 玩家操作区 (Bottom) === */
         #player-zone {
-            /* 增大高度以容纳扇形展开的牌 */
             height: 270px; 
             position: relative;
             background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
@@ -149,15 +148,15 @@
         /* 手牌容器 (扇形) */
         #hand-container {
             position: relative;
-            /* 允许卡牌向上弹出和旋转 */
             height: 180px; 
             width: 100%;
             display: flex;
-            justify-content: center;
+            /* 关键修正：确保容器居中 */
+            justify-content: center; 
             align-items: flex-end;
         }
 
-        /* === 扑克牌通用样式 - V3 修正数字位置 === */
+        /* === 扑克牌通用样式 === */
         .card {
             width: var(--card-width);
             height: var(--card-height);
@@ -165,12 +164,12 @@
             border-radius: 6px;
             box-shadow: 1px 1px 4px rgba(0,0,0,0.4);
             position: relative;
-            display: block; /* 改为 block 方便定位子元素 */
+            display: block;
             padding: 4px;
             font-size: 20px;
             line-height: 1;
             border: 1px solid #ccc;
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), margin 0.2s; 
         }
         
         .card.red { color: #d63031; }
@@ -196,14 +195,21 @@
 
         /* 玩家手牌特定样式 */
         .my-card {
-            position: absolute;
+            position: relative; /* 关键修正：改为 relative，由 flex 居中 */
             transform-origin: 50% 120%; /* 扇形旋转中心 */
             box-shadow: -2px 0 10px rgba(0,0,0,0.3);
-            /* 解决点击选中后扇形旋转的问题 */
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            /* 修正：使用负margin实现重叠，而不是绝对定位 */
+            margin-left: -40px; 
+            /* 第一张牌不需要左移 */
+            margin-top: auto; 
         }
+        .my-card:first-child {
+            margin-left: 0;
+        }
+        
         .my-card.selected {
-            transform: translateY(-30px) !important; /* 上浮更多，确保不被边缘遮挡 */
+            /* 选中时，去除旋转效果，垂直上浮 */
+            transform: translateY(-30px) !important; 
             z-index: 100 !important;
             border: 3px solid #ffb800;
         }
@@ -269,26 +275,25 @@
 
 <script>
 /**
- * 斗地主核心逻辑 - V3 修正版
- * 1. 修复手牌显示不全 (增大容器高度)
- * 2. 修正卡牌数字位置到对角 (CSS/JS)
- * 3. 修正过轮后无法出牌的逻辑 (lastPlay/passCount)
+ * 斗地主核心逻辑 - V4 最终修正版
+ * 1. 修复手牌居中和扇形定位，解决卡牌堆叠在左侧的问题。
+ * 2. 修复叫地主后，自由出牌逻辑中的牌型校验问题。
  */
 const SUITS = ['♠', '♥', '♣', '♦'];
 const RANKS = ['3','4','5','6','7','8','9','10','J','Q','K','A','2'];
 
 class Card {
     constructor(val, suit = '', type = 'normal') {
-        this.val = val; // 权重
+        this.val = val; 
         this.suit = suit;
-        this.type = type; // normal, joker
+        this.type = type;
         this.selected = false;
         this.id = Math.random().toString(36).substr(2, 9);
     }
     
     get display() {
-        if (this.val === 16) return 'S'; // Small Joker
-        if (this.val === 17) return 'B'; // Big Joker
+        if (this.val === 16) return 'S'; 
+        if (this.val === 17) return 'B'; 
         return RANKS[this.val - 3];
     }
 
@@ -301,7 +306,6 @@ class Card {
 class Game {
     constructor() {
         this.reset();
-        // DOM Elements
         this.els = {
             hand: document.getElementById('hand-container'),
             controls: {
@@ -337,8 +341,8 @@ class Game {
         this.hands = { south: [], west: [], east: [] };
         this.baseCards = [];
         this.landlord = null;
-        this.turn = null; // south, west, east
-        this.status = 'idle'; // idle, bidding, playing
+        this.turn = null;
+        this.status = 'idle';
         this.lastPlay = null; // { player, cards, type, val }
         this.passCount = 0;
     }
@@ -365,6 +369,7 @@ class Game {
         this.status = 'bidding';
         this.showToast('请叫地主');
         this.els.controls.bid.style.display = 'flex';
+        this.els.controls.play.style.display = 'none';
     }
 
     createDeck() {
@@ -373,8 +378,8 @@ class Game {
                 this.deck.push(new Card(v, s));
             }
         }
-        this.deck.push(new Card(16, '', 'joker')); // S
-        this.deck.push(new Card(17, '', 'joker')); // B
+        this.deck.push(new Card(16, '', 'joker')); 
+        this.deck.push(new Card(17, '', 'joker')); 
     }
 
     shuffle() {
@@ -394,7 +399,7 @@ class Game {
     }
 
     sortHand(who) {
-        this.hands[who].sort((a,b) => b.val - a.val); // Descending
+        this.hands[who].sort((a,b) => b.val - a.val);
     }
 
     // --- UI Rendering ---
@@ -403,18 +408,19 @@ class Game {
         this.els.hand.innerHTML = '';
         const len = this.hands.south.length;
         
-        // 调整扇形参数，最大跨度 80 度，确保不被切边
         const maxAngle = 80;
-        const angleSpan = Math.min(maxAngle, len * 4); 
+        const angleSpan = Math.min(maxAngle, len * 4.5); 
         const startAngle = -angleSpan / 2;
         const step = len > 1 ? angleSpan / (len - 1) : 0;
-
+        
+        // 调整重叠值
+        const overlap = 45; 
+        
         this.hands.south.forEach((card, idx) => {
             const el = document.createElement('div');
             el.className = `card my-card ${card.color}`;
             if(card.selected) el.classList.add('selected');
             
-            // 修正：将数字和花色放在对角
             let suitForCorner = card.suit === '♠' ? '&#9824;' : 
                                 card.suit === '♥' ? '&#9829;' :
                                 card.suit === '♣' ? '&#9827;' :
@@ -434,14 +440,20 @@ class Game {
             };
 
             const rot = startAngle + idx * step;
-            const yOff = Math.abs(rot) * 0.7; /* 增大偏移让牌更居中 */
+            const yOff = Math.abs(rot) * 0.7; 
             
             el.style.transform = `rotate(${rot}deg) translateY(${yOff}px)`;
             
-            // 调整 X offset 确保重叠和居中
-            el.style.left = `${(idx - (len-1)/2) * 20}px`; 
-            el.style.position = 'absolute';
-            el.style.bottom = '10px';
+            // 关键修正：使用 margin-left 实现重叠
+            if (idx > 0) {
+                el.style.marginLeft = `-${overlap}px`;
+            } else {
+                el.style.marginLeft = '0';
+            }
+            
+            // 修正：相对定位，依靠 flex 居中
+            el.style.position = 'relative'; 
+            el.style.bottom = '0';
             el.style.zIndex = idx;
 
             this.els.hand.appendChild(el);
@@ -470,15 +482,19 @@ class Game {
 
     playerBid(wants) {
         this.els.controls.bid.style.display = 'none';
-        if(wants) {
-            this.setLandlord('south');
+        let winner = 'south'; // Default to player if AI doesn't bid
+        
+        if (wants) {
+            winner = 'south';
         } else {
-            // Simplified AI bidding logic
+            // Simplified AI bidding
             const r = Math.random();
-            if(r > 0.6) this.setLandlord('east');
-            else if (r > 0.3) this.setLandlord('west');
-            else this.setLandlord('south'); // For demo simplicity if AI doesn't bid, player gets it
+            if(r > 0.7) winner = 'east';
+            else if (r > 0.4) winner = 'west';
+            else winner = 'south'; 
         }
+
+        this.setLandlord(winner);
     }
 
     setLandlord(who) {
@@ -524,11 +540,11 @@ class Game {
         if(this.turn === 'south') {
             this.els.controls.play.style.display = 'flex';
             
-            // 修正：判断是否自由出牌 (无人管，或一轮已过)
             const isFree = (this.lastPlay === null || this.lastPlay.player === 'south' || this.passCount === 2);
             
+            // 修正：确保第一手牌不能 Pass
             this.els.controls.pass.style.display = isFree ? 'none' : 'block';
-            this.showToast('轮到你出牌');
+            this.showToast(isFree ? '请自由出牌' : `请大过 ${this.lastPlay.player.toUpperCase()}`);
         } else {
             this.els.controls.play.style.display = 'none';
             setTimeout(() => this.aiPlay(), 1000);
@@ -554,19 +570,21 @@ class Game {
             return;
         }
 
-        const isFree = (this.lastPlay === null || this.lastPlay.player === 'south' || this.passCount === 2);
+        const isFree = (this.lastPlay === null || this.passCount === 2);
 
-        // Check if can beat, only if not free
+        // 关键修正：只有在非自由出牌且不能打过上家时，才返回。
         if(!isFree) {
             if(!this.canBeat(typeInfo, this.lastPlay)) {
                 this.showToast('打不过上家');
                 return;
             }
         }
-
-        // Play Success
+        
+        // 自由出牌成功 或 打过上家成功
         this.hands.south = this.hands.south.filter(c => !c.selected);
         this.renderHand();
+        
+        // 修正：更新 lastPlay 必须使用检查过的牌型
         this.lastPlay = { player: 'south', cards: selected, ...typeInfo };
         this.passCount = 0;
         
@@ -578,16 +596,13 @@ class Game {
         const hand = this.hands[this.turn];
         let toPlay = [];
         
-        // 修正：判断是否自由出牌
-        const isFree = (this.lastPlay === null || this.lastPlay.player === this.turn || this.passCount === 2);
+        const isFree = (this.lastPlay === null || this.passCount === 2);
         
         if(isFree) {
-            this.lastPlay = null; // 确保下一家是自由出牌
-            this.passCount = 0;
-            // Play smallest single
+            // 自由出牌，打最小单牌
             toPlay = [hand[hand.length-1]];
         } else {
-            // Try to beat (Dumb AI)
+            // 尝试打过上家
             const target = this.lastPlay;
             if(target.type === 'single') {
                 const c = hand.slice().reverse().find(x => x.val > target.val);
@@ -606,7 +621,6 @@ class Game {
             this.renderPlayed(this.turn, toPlay);
             this.checkWin(this.turn);
         } else {
-            // Pass
             this.passCount++;
             this.renderPlayed(this.turn, []);
             this.nextTurn();
@@ -621,11 +635,6 @@ class Game {
         else if(this.turn === 'east') this.turn = 'west';
         else this.turn = 'south';
         
-        // 修正：如果所有其他人都 Pass 了，重置上一轮出牌信息
-        if(this.passCount === 2 && this.turn === 'south') {
-            this.showToast('一轮结束，请自由出牌');
-        }
-
         this.runTurn();
     }
 
@@ -637,7 +646,10 @@ class Game {
             this.els.controls.start.innerText = '再来一局';
             this.els.controls.play.style.display = 'none';
         } else {
-            this.nextTurn();
+            // AI 在 play 方法中会直接调用 nextTurn，这里不再调用
+            if (this.turn === 'south') {
+                 // Nothing to do, runTurn() is called by nextTurn() 
+            }
         }
     }
 
@@ -682,7 +694,6 @@ class Game {
         if(len === 0) return null;
         const vals = cards.map(c => c.val).sort((a,b)=>a-b);
         
-        // Simplified Rules: Single, Pair, Rocket, Bomb
         if(len === 1) return { type: 'single', val: vals[0], cards: cards };
         if(len === 2 && vals[0] === vals[1]) return { type: 'pair', val: vals[0], cards: cards };
         if(len === 2 && vals[0] === 16 && vals[1] === 17) return { type: 'rocket', val: 99, cards: cards };
@@ -695,7 +706,6 @@ class Game {
         if(my.type === 'rocket') return true;
         if(target.type === 'rocket') return false;
         
-        // Bomb beats non-bomb
         if(my.type === 'bomb' && target.type !== 'bomb') return true;
         
         if(my.type === target.type && my.cards.length === target.cards.length) { 
