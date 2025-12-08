@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web版斗地主</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="top-info">
+            <div id="landlord-info">地主：[等待]</div>
+            <div id="bottom-cards" class="card-area">
+                <div class="card back"></div> 
+                <div class="card back"></div>
+                <div class="card back"></div>
+            </div>
+        </div>
+
+        <div id="play-area">
+            <div id="player-north-play" class="played-cards"></div>
+            <div id="player-west-play" class="played-cards"></div>
+            <div id="player-east-play" class="played-cards"></div>
+        </div>
+
+        <div id="player-south">
+            <div id="south-hand" class="card-area hand">
+                </div>
+            
+            <div id="controls">
+                <button id="btn-call-landlord" class="control-btn">叫地主</button>
+                <button id="btn-pass" class="control-btn" disabled>不出</button>
+                <button id="btn-tip" class="control-btn" disabled>提示</button>
+                <button id="btn-play" class="control-btn" disabled>出牌</button>
+            </div>
+        </div>
+
+        <div id="status-message">点击 “叫地主” 开始游戏！</div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
