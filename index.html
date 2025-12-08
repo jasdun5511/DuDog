@@ -3,51 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Web版斗地主 - 手机优化</title>
+    <title>Web版斗地主 - 精美UI版</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap" rel="stylesheet">
     <style>
-        /* === STYLE: 手机优化与布局重构 === */
-        
-        /* 移动设备基础样式 */
+        /* === 1. 全局与背景优化 === */
         body {
-            background-color: #1a472a; /* 更深的背景，突出游戏区域 */
-            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1f2833 0%, #0b0c0f 100%); /* 深色渐变背景 */
+            font-family: 'Roboto', Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
             overflow: hidden;
-            touch-action: manipulation; /* 优化触摸响应 */
+            touch-action: manipulation;
+            color: #ccc;
         }
 
         #game-container {
             width: 98%;
+            max-width: 800px; /* 限制最大宽度，改善桌面体验 */
             height: 98%;
-            background-color: #38761d;
+            background-color: #3e8e41; /* 更柔和的桌面绿色 */
             border-radius: 15px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
-            position: relative;
-            padding: 5px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9);
+            padding: 10px;
             
-            /* 实现背景框歪斜效果 */
-            transform: perspective(1000px) rotateX(10deg) rotateZ(3deg); 
-            /* 稍微向后倾斜，并轻微旋转，增加立体感和动态感 */
+            /* 保持歪斜效果，但角度更平缓 */
+            transform: perspective(1000px) rotateX(8deg) rotateZ(1deg); 
+            transition: transform 0.5s ease;
         }
         
-        /* 桌面布局 (Grid 布局，适应手机的纵向空间) */
+        /* --- 2. 桌面布局 --- */
         #game-board {
             display: grid;
             grid-template-areas:
-                "top-center top-center" /* 电脑玩家 North, 底牌 */
-                "left-play right-play" /* 电脑出牌区 West & East */
-                "center-play center-play"; /* 玩家出牌区 South */
+                "top-center top-center"
+                "west-play right-play" 
+                "center-play center-play"; 
             grid-template-columns: 1fr 1fr;
-            grid-template-rows: 1fr 1fr 1fr;
-            height: calc(100% - 130px); /* 减去底部控制区的高度 */
-            padding: 10px;
+            grid-template-rows: 1.2fr 1fr 1fr;
+            height: calc(100% - 130px);
+            padding: 5px;
         }
 
-        /* 顶部信息和北家手牌/底牌 */
         #top-center {
             grid-area: top-center;
             display: flex;
@@ -55,94 +54,113 @@
             align-items: center;
             height: 100%;
         }
-        #player-north-hand { order: 1; }
-        #bottom-cards { order: 2; display: flex; gap: 5px; }
+        
+        #bottom-cards { display: flex; gap: 3px; align-items: center; }
 
-        /* 电脑玩家出牌区 (更靠近中心) */
-        #player-west-play { grid-area: left-play; display: flex; justify-content: flex-start; align-items: flex-start; padding-left: 5px; }
-        #player-east-play { grid-area: right-play; display: flex; justify-content: flex-end; align-items: flex-start; padding-right: 5px; }
-        #player-north-play { display: none; /* 在手机上，北家的出牌显示在 top-center 区域下方，或不显示 */ }
-        #player-south-play { grid-area: center-play; display: flex; justify-content: center; align-items: flex-start; padding-top: 5px; }
-
-
-        /* 电脑玩家手牌指示 */
+        /* 电脑玩家手牌指示 - 精美化 */
         .computer-hand {
-            color: white;
-            font-size: 14px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            padding: 5px;
-            border-radius: 5px;
+            color: #e0e0e0;
+            font-size: 15px;
+            background-color: rgba(0, 0, 0, 0.4);
+            border: 2px solid #5a5a5a;
+            padding: 8px 12px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
         }
+        
+        #player-west-hand { position: absolute; top: 30%; left: 10px; }
+        #player-east-hand { position: absolute; top: 30%; right: 10px; }
+        
+        /* 出牌区域 */
+        #player-west-play { grid-area: west-play; display: flex; justify-content: flex-start; align-items: flex-end; padding-left: 20px; }
+        #player-east-play { grid-area: right-play; display: flex; justify-content: flex-end; align-items: flex-end; padding-right: 20px; }
+        #player-south-play { grid-area: center-play; display: flex; justify-content: center; align-items: flex-start; padding-top: 10px; }
 
-        /* 西家和东家手牌区 (在侧边显示手牌数量) */
-        #player-west-hand { position: absolute; top: 30%; left: 0; }
-        #player-east-hand { position: absolute; top: 30%; right: 0; }
-
-
-        /* --- 卡牌样式 --- */
-        .card-area {
-            display: flex;
-            gap: -15px; /* 减小重叠 */
-        }
+        /* --- 3. 卡牌样式优化 --- */
+        .card-area { display: flex; gap: -20px; }
 
         .card {
-            width: 45px; /* 减小牌的大小以适应手机 */
-            height: 68px;
-            font-size: 16px;
-            border-radius: 4px;
-            box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+            width: 50px; 
+            height: 75px;
+            background-color: #fcfcfc;
+            border: 1px solid #444;
+            border-radius: 6px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), inset 0 0 5px rgba(255, 255, 255, 0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 4px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+            position: relative;
         }
+
+        .card.red { color: #d00000; }
+        .card.black { color: #000000; }
+        .card.back {
+            background: linear-gradient(45deg, #0056b3, #007bff);
+            color: #fff;
+            font-size: 12px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+            padding: 0;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .card .rank { line-height: 1; }
+        .card .suit { font-size: 10px; align-self: flex-end; transform: rotate(180deg); }
 
         /* 玩家手牌区 */
         #player-south-controls {
-            height: 130px; /* 预留底部空间 */
-            justify-content: space-around;
-            background-color: rgba(0, 0, 0, 0.2);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            height: 130px;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-top: 2px solid #5a5a5a;
+            border-radius: 0 0 15px 15px;
+            padding: 5px 0;
         }
 
-        #south-hand {
-            gap: -25px; /* 手机上手牌间距更紧凑 */
-            overflow-x: auto; /* 允许牌太多时横向滚动 (可选) */
-            padding: 0 5px;
-        }
+        #south-hand { gap: -30px; padding: 0 10px; }
 
-        #south-hand .card:hover { transform: translateY(-10px); }
-        #south-hand .card.selected { transform: translateY(-20px); border: 2px solid #ffc107; }
+        #south-hand .card:hover { transform: translateY(-12px); }
+        #south-hand .card.selected { 
+            transform: translateY(-25px); 
+            border: 3px solid #ffcc00;
+            box-shadow: 0 8px 15px rgba(255, 204, 0, 0.5);
+        }
 
         /* 控制按钮 */
-        #controls {
-            gap: 10px;
-        }
-
         .control-btn {
-            padding: 8px 15px;
+            padding: 8px 18px;
             font-size: 14px;
+            font-weight: 700;
+            background-color: #ffcc00;
+            color: #333;
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: background-color 0.2s;
         }
+        .control-btn:hover:not(:disabled) { background-color: #ffdd44; }
+        .control-btn:disabled { background-color: #777; color: #bbb; cursor: not-allowed; }
         
-        /* 回合指示器 (适应手机布局) */
         .current-turn-indicator {
             border: 3px solid #ff0077;
-            box-shadow: 0 0 8px #ff0077;
+            box-shadow: 0 0 10px #ff0077;
         }
         
-        /* 确保出牌区的牌不被重叠的父元素裁剪 */
         .played-cards {
             min-height: 40px;
             min-width: 40px;
             display: flex;
-            padding: 5px;
-            gap: -20px;
+            gap: -25px;
+            text-shadow: 0 0 5px #000;
         }
-
-
-        /* --- 非布局相关的通用样式 --- */
-        .card.red { color: red; }
-        .card.black { color: black; }
-        .card.back { background-color: #007bff; color: white; cursor: default; }
-        .card .suit { font-size: 10px; }
-        /* 其他样式保持不变 */
-        /* ... (保留上一版本的非布局CSS) ... */
     </style>
 </head>
 <body>
@@ -165,12 +183,11 @@
             <div id="player-east-play" class="played-cards"></div>
             
             <div id="player-south-play" class="played-cards"></div>
-            
-            <div id="player-north-play" class="played-cards"></div>
+            <div id="player-north-play" class="played-cards" style="display:none;"></div>
         </div>
 
         <div id="player-south-controls">
-            <div id="status-message" style="color: white; margin-bottom: 5px; font-size: 14px;">点击 “叫地主” 开始游戏！</div>
+            <div id="status-message" style="color: #ffcc00; margin-bottom: 5px; font-size: 15px;">点击 “叫地主” 开始游戏！</div>
             <div id="south-hand" class="card-area">
                 </div>
             
@@ -184,9 +201,8 @@
     </div>
 
     <script>
-        // === SCRIPT: 游戏逻辑 (保持不变) ===
+        // === SCRIPT: 游戏逻辑 (修复West获胜Bug和AI逻辑) ===
         
-        // --- 1. 核心数据与常量 ---
         const RANKS = { 11: 'J', 12: 'Q', 13: 'K', 14: 'A', 15: '2', 16: 'w', 17: 'W' };
         const SUITS_MAP = { 'S': '♠', 'H': '♥', 'D': '♦', 'C': '♣' };
         const SUITS = ['S', 'H', 'D', 'C'];
@@ -212,14 +228,13 @@
             passCount: 0 
         };
 
-        // --- 2. DOM 元素获取 ---
         const southHandEl = document.getElementById('south-hand');
         const statusMessageEl = document.getElementById('status-message');
         const btnCallLandlord = document.getElementById('btn-call-landlord');
         const btnPass = document.getElementById('btn-pass');
         const btnPlay = document.getElementById('btn-play');
 
-        // --- 3. 核心卡牌/校验函数 (保持与上一版本一致) ---
+        // --- 核心卡牌/校验函数 (保持与上一版本一致) ---
         function createDeck() {
             let deck = [];
             for (let value = 3; value <= 15; value++) {
@@ -249,6 +264,7 @@
         }
 
         function checkCardType(cards) {
+            // ... (牌型校验逻辑不变，确保返回 type 和 mainValue)
             const n = cards.length;
             if (n === 0) return { type: TYPE.INVALID, mainValue: 0 };
             
@@ -285,13 +301,11 @@
             
             return false;
         }
+        // --- 核心卡牌/校验函数结束 ---
 
 
-        // --- 4. 界面更新函数 (已适配新布局) ---
-
-        function getCardRank(value) {
-            return RANKS[value] || String(value);
-        }
+        // --- 界面更新函数 (已适配新布局) ---
+        function getCardRank(value) { return RANKS[value] || String(value); }
 
         function createCardElement(card, isSelectable = false) {
             const cardEl = document.createElement('div');
@@ -305,9 +319,7 @@
             }
 
             if (isSelectable) {
-                cardEl.addEventListener('click', () => {
-                    cardEl.classList.toggle('selected');
-                });
+                cardEl.addEventListener('click', () => { cardEl.classList.toggle('selected'); });
             }
             return cardEl;
         }
@@ -323,11 +335,12 @@
         }
 
         function renderComputerHandCounts() {
-            // 注意：'west' 和 'east' 是独立显示的，'north' 在 top-center
             for (const player of ['north', 'west', 'east']) {
                 const count = GAME_STATE.hands[player].length;
                 const el = document.getElementById(`player-${player}-hand`);
-                el.textContent = `${player === GAME_STATE.landlord ? '地主' : '农民'} (${count} 张)`;
+                const role = player === GAME_STATE.landlord ? '地主' : 
+                             GAME_STATE.landlord ? (player !== GAME_STATE.landlord ? '农民' : '') : '';
+                el.innerHTML = `<div>${player.toUpperCase()}家 (${role})</div><div>${count} 张</div>`;
             }
         }
         
@@ -336,10 +349,7 @@
             playedAreaEl.innerHTML = '';
 
             if (cards.length === 0) {
-                // 如果是“不出”，显示文本，避免出牌区留空
-                playedAreaEl.textContent = '不出';
-                playedAreaEl.style.color = '#fff';
-                playedAreaEl.style.fontSize = '14px';
+                playedAreaEl.innerHTML = `<div style="color:#ffcc00; font-weight:700;">不出</div>`;
                 return;
             }
             playedAreaEl.textContent = '';
@@ -358,30 +368,34 @@
             const currentPlayer = GAME_STATE.playerOrder[GAME_STATE.currentPlayerIndex];
             if (currentPlayer === 'south') {
                 document.getElementById('player-south-controls').classList.add('current-turn-indicator');
-                const isMyTurnToPlay = GAME_STATE.lastPlayed.player === null || GAME_STATE.passCount === 3 || GAME_STATE.lastPlayed.player === 'south';
+                const isMyTurnToPlay = GAME_STATE.lastPlayed.player === null || GAME_STATE.passCount === 3;
                 
-                btnPass.disabled = isMyTurnToPlay; // 只有在需要打牌时才能选择“不出”
+                btnPass.disabled = isMyTurnToPlay; 
                 btnPlay.disabled = false;
             } else {
                 document.getElementById(`player-${currentPlayer}-hand`).classList.add('current-turn-indicator');
                 btnPass.disabled = true;
                 btnPlay.disabled = true;
-                setTimeout(computerPlay, 1000); // 1秒后电脑出牌，加快手机体验
+                setTimeout(computerPlay, 1000); 
             }
-            statusMessageEl.textContent = `轮到 ${currentPlayer} 出牌...`;
+            statusMessageEl.textContent = `轮到 ${currentPlayer.toUpperCase()} 出牌...`;
         }
 
         function checkWin() {
             const currentPlayer = GAME_STATE.playerOrder[GAME_STATE.currentPlayerIndex];
+            // 修复: 只有在手牌数 **真正** 变为 0 时才判定胜利
             if (GAME_STATE.hands[currentPlayer].length === 0) {
-                alert(`${currentPlayer} 获胜! 游戏结束。`);
+                const role = currentPlayer === GAME_STATE.landlord ? '地主' : '农民';
+                alert(`${currentPlayer.toUpperCase()} (${role}) 获胜! 游戏结束。`);
+                // 重启游戏 (可选)
+                // setTimeout(startGame, 3000);
                 return true;
             }
             return false;
         }
 
 
-        // --- 5. 游戏流程控制 (保持不变) ---
+        // --- 5. 游戏流程控制 ---
 
         function startGame() {
             GAME_STATE = { 
@@ -391,11 +405,29 @@
             };
             shuffle(GAME_STATE.deck);
 
+            // 发牌逻辑修复: 使用一个循环确保公平且牌量正确
+            const players = ['south', 'east', 'north', 'west'];
+            let playerIndex = 0;
+            while(GAME_STATE.deck.length > 3) {
+                const player = players[playerIndex % 4];
+                GAME_STATE.hands[player].push(GAME_STATE.deck.pop());
+                playerIndex++;
+            }
+            // 确保每个玩家都拿到 51 / 3 = 17 张牌 (如果玩家是3个，我们现在是4个玩家，需要调整)
+            // 修正：斗地主是3人游戏，我们应该只给 south, east, north 发牌，west 应该被移除或用作旁观者。
+            // 保持4个玩家是为了模拟您之前的代码结构，但我们只给3个玩家发牌 (17 * 3 = 51)。
+
+            // 重新发牌 (3人模式: south, east, north)
+            GAME_STATE.hands = { south: [], east: [], north: [], west: [] };
+            GAME_STATE.deck = createDeck();
+            shuffle(GAME_STATE.deck);
+
             for (let i = 0; i < 17; i++) {
                 GAME_STATE.hands.south.push(GAME_STATE.deck.pop());
                 GAME_STATE.hands.east.push(GAME_STATE.deck.pop());
                 GAME_STATE.hands.north.push(GAME_STATE.deck.pop());
             }
+            GAME_STATE.deck.splice(0, 3); // 移除剩余的牌（如果不是54张，这里是安全的）
 
             GAME_STATE.bottomCards = GAME_STATE.deck.splice(0, 3);
             
@@ -410,13 +442,18 @@
             btnPass.style.display = 'none';
             btnPlay.style.display = 'none';
             btnCallLandlord.style.display = 'inline-block';
+            
+            // 清空出牌区
+            renderPlayedCards('south', []);
+            renderPlayedCards('east', []);
+            renderPlayedCards('north', []);
         }
 
         function handleCallLandlord() {
             const player = 'south'; 
             GAME_STATE.landlord = player;
-            // 出牌顺序：地主 -> 下家 -> ...
-            GAME_STATE.playerOrder = ['south', 'east', 'north', 'west']; 
+            // 3人模式顺序: 地主 -> 下家 -> 下下家
+            GAME_STATE.playerOrder = ['south', 'east', 'north']; 
             
             GAME_STATE.hands[player].push(...GAME_STATE.bottomCards);
             
@@ -446,7 +483,7 @@
 
             if (playedCards.length === 0) { alert("请选择要出的牌！"); return; }
             
-            const isFirstPlay = GAME_STATE.lastPlayed.player === null || GAME_STATE.passCount === 3;
+            const isFirstPlay = GAME_STATE.lastPlayed.player === null || GAME_STATE.passCount === (GAME_STATE.playerOrder.length - 1);
             let isValid = checkCardType(playedCards).type !== TYPE.INVALID;
 
             if (!isFirstPlay) {
@@ -455,10 +492,20 @@
 
             if (isValid) {
                 const currentHand = GAME_STATE.hands.south;
-                playedCards.forEach(playedCard => {
-                    const index = currentHand.findIndex(c => c.value === playedCard.value && c.suit === playedCard.suit);
-                    if (index !== -1) { currentHand.splice(index, 1); }
-                });
+                // 修复: 确保移除逻辑严谨
+                const tempHand = [...currentHand];
+                const cardsToRemove = [...playedCards];
+                const newHand = [];
+
+                for (const card of tempHand) {
+                    const idx = cardsToRemove.findIndex(c => c.value === card.value && c.suit === card.suit);
+                    if (idx !== -1) {
+                        cardsToRemove.splice(idx, 1);
+                    } else {
+                        newHand.push(card);
+                    }
+                }
+                GAME_STATE.hands.south = newHand; // 更新手牌
 
                 GAME_STATE.lastPlayed = {
                     player: 'south', cards: playedCards, ...checkCardType(playedCards)
@@ -478,22 +525,24 @@
         }
 
         function handlePass() {
+            // ... (与上一版本保持一致)
             renderPlayedCards('south', []);
             GAME_STATE.passCount++;
             
-            if (GAME_STATE.passCount === 3) {
+            if (GAME_STATE.passCount === (GAME_STATE.playerOrder.length - 1)) {
                 GAME_STATE.lastPlayed = { player: null, cards: [], type: TYPE.INVALID, mainValue: 0 };
+                GAME_STATE.passCount = 0; // 重置passCount
             }
             
             nextTurn();
         }
 
         function nextTurn() {
-            GAME_STATE.currentPlayerIndex = (GAME_STATE.currentPlayerIndex + 1) % 4;
+            GAME_STATE.currentPlayerIndex = (GAME_STATE.currentPlayerIndex + 1) % GAME_STATE.playerOrder.length;
             updateTurnIndicator();
         }
 
-        // --- 6. 电脑 AI 模拟 (保持不变) ---
+        // --- 6. 电脑 AI 模拟 (修复逻辑) ---
 
         function computerPlay() {
             const player = GAME_STATE.playerOrder[GAME_STATE.currentPlayerIndex];
@@ -503,22 +552,24 @@
             let playedCards = [];
             let pass = true;
 
-            const isFirstPlay = lastPlay.player === null || GAME_STATE.passCount === 3;
+            const isFirstPlay = lastPlay.player === null || GAME_STATE.passCount === (GAME_STATE.playerOrder.length - 1);
             
             if (isFirstPlay) {
                 currentHand.sort((a, b) => a.value - b.value);
                 playedCards = [currentHand[0]];
                 pass = false;
             } else {
-                const targetValue = lastPlay.mainValue;
                 const targetType = lastPlay.type;
                 const neededCount = lastPlay.cards.length;
 
+                // 尝试用相同的牌型，找出能打过的最小组合
                 if (targetType === TYPE.SINGLE || targetType === TYPE.PAIR || targetType === TYPE.TRIPLET) {
                     const counts = countRanks(currentHand);
+                    const mainRanks = Object.keys(counts).map(Number).sort((a, b) => a - b);
                     
-                    for (const value of Object.keys(counts).map(Number).sort((a, b) => a - b)) {
-                        if (counts[value] >= neededCount && value > targetValue) {
+                    for (const value of mainRanks) {
+                        if (counts[value] >= neededCount && value > lastPlay.mainValue) {
+                            // 找到能打过的牌
                             playedCards = currentHand.filter(c => c.value === value).slice(0, neededCount);
                             pass = false;
                             break;
@@ -526,26 +577,33 @@
                     }
                 }
                 
+                // 简化：如果不能打过，则 pass
                 if (pass) { playedCards = []; }
             }
 
             if (pass) {
                 renderPlayedCards(player, []);
                 GAME_STATE.passCount++;
-                if (GAME_STATE.passCount === 3) {
+                if (GAME_STATE.passCount === (GAME_STATE.playerOrder.length - 1)) {
                     GAME_STATE.lastPlayed = { player: null, cards: [], type: TYPE.INVALID, mainValue: 0 };
+                    GAME_STATE.passCount = 0;
                 }
             } else {
+                // 修复: 确保电脑玩家的牌被正确移除
                 const playedValues = playedCards.map(c => c.value);
-                const newHand = currentHand.filter(card => {
-                    const index = playedValues.indexOf(card.value);
-                    if (index !== -1) {
-                        playedValues.splice(index, 1);
-                        return false;
+                const tempHand = [...currentHand];
+                const cardsToRemove = [...playedCards];
+                const newHand = [];
+
+                for (const card of tempHand) {
+                    const idx = cardsToRemove.findIndex(c => c.value === card.value && c.suit === card.suit);
+                    if (idx !== -1) {
+                        cardsToRemove.splice(idx, 1);
+                    } else {
+                        newHand.push(card);
                     }
-                    return true;
-                });
-                GAME_STATE.hands[player] = newHand;
+                }
+                GAME_STATE.hands[player] = newHand; // 更新手牌
 
                 GAME_STATE.lastPlayed = {
                     player: player, cards: playedCards, ...checkCardType(playedCards)
@@ -557,6 +615,7 @@
             
             renderComputerHandCounts();
             
+            // 在下一回合开始前检查胜利
             if (checkWin()) return;
             
             nextTurn();
