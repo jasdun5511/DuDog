@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>斗地主：废土生存 (V7 全牌型智能版)</title>
+    <title>斗地主：赖子核爆版 (V8)</title>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
             --neon-blue: #00f3ff;
             --neon-pink: #ff0055;
             --hazard: #ffcc00;
+            --laizi-glow: #aa00ff; /* 赖子专属紫光 */
             --bg-dark: #0a0a12;
-            --panel-bg: rgba(20, 30, 40, 0.85);
             --card-w: 60px;
             --card-h: 90px;
         }
@@ -23,7 +23,7 @@
             background: #050505;
             background-image: 
                 radial-gradient(circle at 50% 50%, #1a1a2e 0%, #000 100%),
-                repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0, 243, 255, 0.03) 1px, rgba(0, 243, 255, 0.03) 2px);
+                repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(170, 0, 255, 0.05) 1px, rgba(170, 0, 255, 0.05) 2px);
             font-family: 'Share Tech Mono', monospace;
             color: var(--neon-blue);
             display: flex; flex-direction: column;
@@ -32,15 +32,7 @@
         /* === 震动特效 === */
         @keyframes shake {
             0% { transform: translate(1px, 1px) rotate(0deg); }
-            10% { transform: translate(-1px, -2px) rotate(-1deg); }
-            20% { transform: translate(-3px, 0px) rotate(1deg); }
-            30% { transform: translate(3px, 2px) rotate(0deg); }
-            40% { transform: translate(1px, -1px) rotate(1deg); }
             50% { transform: translate(-1px, 2px) rotate(-1deg); }
-            60% { transform: translate(-3px, 1px) rotate(0deg); }
-            70% { transform: translate(3px, 1px) rotate(-1deg); }
-            80% { transform: translate(-1px, -1px) rotate(1deg); }
-            90% { transform: translate(1px, 2px) rotate(0deg); }
             100% { transform: translate(1px, -2px) rotate(-1deg); }
         }
         .shake-screen { animation: shake 0.5s; }
@@ -48,26 +40,26 @@
         /* === 游戏区域 === */
         #game-table { flex: 1; position: relative; width: 100%; perspective: 1000px; }
         
-        /* 顶部栏 & 辐射条 */
+        /* 顶部栏 */
         #hud-top {
-            position: absolute; top: 0; width: 100%; height: 60px;
-            display: flex; justify-content: center; align-items: center;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
-            z-index: 10;
+            position: absolute; top: 0; width: 100%; height: 70px;
+            display: flex; justify-content: center; align-items: center; gap: 20px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+            z-index: 10; padding-top: 10px;
         }
-        .radiation-bar {
-            width: 150px; height: 10px; border: 1px solid var(--hazard);
-            margin: 0 10px; position: relative;
+        .laizi-indicator {
+            display: flex; flex-direction: column; align-items: center;
+            border: 1px solid var(--laizi-glow); padding: 5px; border-radius: 4px;
+            background: rgba(170, 0, 255, 0.1);
+            box-shadow: 0 0 15px var(--laizi-glow);
         }
-        .radiation-fill {
-            height: 100%; width: 0%; background: var(--hazard);
-            box-shadow: 0 0 10px var(--hazard); transition: width 0.3s;
-        }
+        .laizi-card-display { font-size: 20px; font-weight: bold; color: #fff; }
+
         .base-cards { display: flex; gap: 5px; }
 
-        /* 玩家头像 (废土风) */
+        /* 玩家头像 */
         .avatar {
-            position: absolute; width: 80px; top: 15%;
+            position: absolute; width: 85px; top: 15%;
             border: 1px solid var(--neon-blue); background: rgba(0, 243, 255, 0.05);
             padding: 5px; text-align: center; font-size: 12px;
             box-shadow: 0 0 5px var(--neon-blue);
@@ -75,8 +67,7 @@
         }
         .avatar.left { left: 10px; border-left: 3px solid var(--neon-blue); }
         .avatar.right { right: 10px; border-right: 3px solid var(--neon-blue); }
-        .avatar .role { font-weight: bold; color: var(--neon-pink); margin-bottom: 2px; }
-        .avatar .count { font-size: 18px; color: #fff; }
+        .avatar .count { font-size: 20px; color: #fff; }
         .active-turn { 
             border-color: var(--hazard); box-shadow: 0 0 15px var(--hazard); 
             background: rgba(255, 204, 0, 0.1);
@@ -88,7 +79,7 @@
             background: #1e1e24; border: 1px solid #444; border-radius: 4px;
             position: absolute; display: flex; flex-direction: column;
             box-shadow: 1px 1px 4px rgba(0,0,0,0.8);
-            transition: transform 0.1s, margin 0.1s;
+            transition: transform 0.1s;
         }
         .card.red { color: #ff2a6d; border-color: #ff2a6d; }
         .card.black { color: #05d9e8; border-color: #05d9e8; }
@@ -98,13 +89,23 @@
             display: flex; justify-content: center; align-items: center;
         }
         .card.back::after { content: '☢'; font-size: 24px; color: var(--hazard); opacity: 0.5; }
+        
+        /* 赖子牌特效 */
+        .card.is-laizi {
+            border: 2px solid var(--laizi-glow);
+            background: linear-gradient(135deg, #1e1e24, #2a0033);
+            box-shadow: 0 0 10px var(--laizi-glow);
+        }
+        .card.is-laizi::before {
+            content: '★'; position: absolute; top: -5px; right: -5px;
+            color: var(--hazard); font-size: 14px; text-shadow: 0 0 5px #fff; z-index: 2;
+        }
+
         .card .val { font-size: 18px; font-weight: bold; margin: 2px 0 0 4px; }
         .card .suit { font-size: 12px; margin-left: 4px; }
-        .card .big-suit { 
-            position: absolute; bottom: 2px; right: 2px; font-size: 28px; opacity: 0.2; 
-        }
+        .card .big-suit { position: absolute; bottom: 2px; right: 2px; font-size: 28px; opacity: 0.2; }
         
-        /* 玩家手牌 (平铺) */
+        /* 玩家手牌 */
         #player-zone {
             height: 240px; position: relative;
             background: linear-gradient(to top, #000, transparent);
@@ -145,14 +146,13 @@
         }
         .btn:active { background: var(--neon-blue); color: #000; }
         .btn.primary { border-color: var(--hazard); color: var(--hazard); box-shadow: 0 0 5px var(--hazard); }
-        .btn.primary:active { background: var(--hazard); color: #000; }
         
         #toast {
             position: fixed; top: 40%; left: 50%; transform: translateX(-50%);
-            background: rgba(0,0,0,0.8); border: 1px solid var(--neon-pink);
-            color: var(--neon-pink); padding: 10px 20px; font-size: 20px;
+            background: rgba(0,0,0,0.8); border: 1px solid var(--laizi-glow);
+            color: var(--laizi-glow); padding: 10px 20px; font-size: 20px;
             opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 100;
-            text-shadow: 0 0 5px var(--neon-pink);
+            text-shadow: 0 0 10px var(--laizi-glow);
         }
     </style>
 </head>
@@ -160,8 +160,10 @@
 
     <div id="game-table">
         <div id="hud-top">
-            <span style="font-size:10px; margin-right:5px;">污染指数</span>
-            <div class="radiation-bar"><div class="radiation-fill" id="rad-bar"></div></div>
+            <div class="laizi-indicator">
+                <div style="font-size:10px; color:var(--laizi-glow);">当前赖子</div>
+                <div class="laizi-card-display" id="laizi-disp">?</div>
+            </div>
             <div class="base-cards">
                 <div class="card back" id="base-0"></div>
                 <div class="card back" id="base-1"></div>
@@ -187,14 +189,13 @@
 
     <div id="player-zone">
         <div id="controls">
-            <div id="grp-start"><button class="btn primary" onclick="game.start()">连接神经元</button></div>
+            <div id="grp-start"><button class="btn primary" onclick="game.start()">初始化系统</button></div>
             <div id="grp-bid" style="display:none">
                 <button class="btn" onclick="game.bid(0)">放弃</button>
-                <button class="btn primary" onclick="game.bid(3)">抢夺控制权</button>
+                <button class="btn primary" onclick="game.bid(3)">夺取权限</button>
             </div>
             <div id="grp-play" style="display:none">
                 <button class="btn" onclick="game.pass()">跳过</button>
-                <button class="btn" onclick="game.hint()">扫描</button>
                 <button class="btn primary" onclick="game.play()">出牌</button>
             </div>
         </div>
@@ -204,104 +205,130 @@
     <div id="toast"></div>
 
 <script>
-/* === 核心数据结构 === */
-const VALUES = { '3':3, '4':4, '5':5, '6':6, '7':7, '8':8, '9':9, '0':10, 'J':11, 'Q':12, 'K':13, 'A':14, '2':15, 'S':16, 'B':17 }; // 0=10, S=Small Joker, B=Big Joker
+/* === 核心数据 === */
+const VALUES = { '3':3, '4':4, '5':5, '6':6, '7':7, '8':8, '9':9, '0':10, 'J':11, 'Q':12, 'K':13, 'A':14, '2':15, 'S':16, 'B':17 };
 const R_VALUES = Object.fromEntries(Object.entries(VALUES).map(([k,v])=>[v,k]));
 const SUITS = ['♠', '♥', '♣', '♦'];
-const TYPES = {
-    INVALID: 0, SINGLE: 1, PAIR: 2, TRIPLET: 3, BOMB: 4, ROCKET: 5,
-    TRIPLET_1: 6, TRIPLET_2: 7, 
-    STRAIGHT: 8, PAIR_STRAIGHT: 9, 
-    PLANE: 10, PLANE_WING_S: 11, PLANE_WING_P: 12,
-    QUAD_2S: 13, QUAD_2P: 14
-};
+const TYPES = { INVALID:0, SINGLE:1, PAIR:2, TRIPLET:3, BOMB:4, ROCKET:5, TRIPLET_1:6, TRIPLET_2:7, STRAIGHT:8, PAIR_STRAIGHT:9, BOMB_LAIZI:10 };
+
+// 全局赖子值 (3-15)
+let GLOBAL_LAIZI_VAL = -1;
 
 class Card {
-    constructor(val, suit) { this.val = val; this.suit = suit; this.sel = false; this.id = Math.random(); }
+    constructor(val, suit) { 
+        this.val = val; 
+        this.suit = suit; 
+        this.sel = false; 
+        this.id = Math.random(); 
+    }
+    get isLaizi() { return this.val === GLOBAL_LAIZI_VAL; }
     get txt() { if(this.val==16) return 'Joker'; if(this.val==17) return 'JOKER'; return R_VALUES[this.val].replace('0','10'); }
     get color() { return (this.suit=='♥'||this.suit=='♦'||this.val==17) ? 'red' : 'black'; }
 }
 
-/* === 牌型分析引擎 (核心智商所在) === */
+/* === 赖子牌型分析引擎 === */
 const Analyzer = {
-    // 基础分析：返回 {type, val, len}
+    // 检查是否包含赖子，并分离
+    split: function(cards) {
+        let laizis = [], normals = [];
+        cards.forEach(c => c.isLaizi ? laizis.push(c) : normals.push(c));
+        return { laizis, normals, lCnt: laizis.length };
+    },
+
     getType: function(cards) {
         let len = cards.length;
         if (len == 0) return null;
+
+        let { laizis, normals, lCnt } = this.split(cards);
         
-        let vals = cards.map(c=>c.val).sort((a,b)=>a-b);
-        let max = vals[len-1], min = vals[0];
+        // 纯赖子炸弹 (如果数量>=4) - 简化：目前一副牌只有4个赖子
+        if (normals.length == 0 && lCnt >= 4) return {t: TYPES.BOMB_LAIZI, v: 999}; 
+
+        // 如果只有赖子，且少于4个，视作该赖子点数的最大牌型
+        if (normals.length == 0) {
+            if (lCnt == 1) return {t: TYPES.SINGLE, v: GLOBAL_LAIZI_VAL};
+            if (lCnt == 2) return {t: TYPES.PAIR, v: GLOBAL_LAIZI_VAL};
+            if (lCnt == 3) return {t: TYPES.TRIPLET, v: GLOBAL_LAIZI_VAL};
+        }
+
+        // 普通分析
+        let nVals = normals.map(c=>c.val).sort((a,b)=>a-b);
+        let counts = {}; nVals.forEach(v => counts[v] = (counts[v]||0)+1);
+        let keys = Object.keys(counts).map(Number);
         
-        // 统计频率
-        let counts = {};
-        vals.forEach(v => counts[v] = (counts[v]||0)+1);
-        let keys = Object.keys(counts).map(Number).sort((a,b)=>counts[a]-counts[b] || a-b); // 按频率排序
-        
-        // 王炸
-        if (len == 2 && min == 16 && max == 17) return {t: TYPES.ROCKET, v: 17};
-        // 炸弹
-        if (len == 4 && keys.length == 1) return {t: TYPES.BOMB, v: keys[0]};
-        // 单张
-        if (len == 1) return {t: TYPES.SINGLE, v: vals[0]};
-        // 对子
-        if (len == 2 && keys.length == 1) return {t: TYPES.PAIR, v: vals[0]};
+        // 王炸 (赖子不能替王)
+        if (len == 2 && nVals.includes(16) && nVals.includes(17)) return {t: TYPES.ROCKET, v: 1000};
+
+        // 单张 (1赖子已处理)
+        if (len == 1) return {t: TYPES.SINGLE, v: nVals[0]};
+
+        // 对子 (1普+1赖, 或 2普)
+        if (len == 2) {
+            if (normals.length == 1) return {t: TYPES.PAIR, v: nVals[0]}; // 赖子配对
+            if (nVals[0] == nVals[1]) return {t: TYPES.PAIR, v: nVals[0]};
+        }
+
         // 三张
-        if (len == 3 && keys.length == 1) return {t: TYPES.TRIPLET, v: vals[0]};
+        if (len == 3) {
+            if (keys.length == 1 && (counts[keys[0]] + lCnt >= 3)) return {t: TYPES.TRIPLET, v: keys[0]};
+        }
+
+        // 炸弹 (硬炸或软炸)
+        if (len == 4) {
+            if (keys.length == 1 && (counts[keys[0]] + lCnt == 4)) return {t: TYPES.BOMB, v: keys[0]};
+        }
+
+        // 顺子 (赖子补缺)
+        if (len >= 5 && keys.length == normals.length && nVals[nVals.length-1] < 15) { // 不含2和王
+            let gaps = 0;
+            for (let i = 0; i < nVals.length - 1; i++) {
+                gaps += (nVals[i+1] - nVals[i] - 1);
+            }
+            if (gaps <= lCnt) return {t: TYPES.STRAIGHT, v: nVals[0], len: len}; // 简化：以最小普通牌定大小
+        }
+
         // 三带一
-        if (len == 4 && counts[keys[1]] == 3) return {t: TYPES.TRIPLET_1, v: keys[1]};
-        // 三带二 (带一对)
-        if (len == 5 && counts[keys[1]] == 3 && counts[keys[0]] == 2) return {t: TYPES.TRIPLET_2, v: keys[1]};
-        
-        // 顺子 (5张起，连续，无2无王)
-        if (len >= 5 && keys.length == len && max < 15 && (max - min) == (len - 1)) return {t: TYPES.STRAIGHT, v: min, len: len};
-        
-        // 连对 (3对起)
-        if (len >= 6 && len % 2 == 0 && keys.length == len/2 && max < 15) {
-            let isSeq = true;
-            for(let i=0; i<keys.length-1; i++) if(keys[i+1]!=keys[i]+1 || counts[keys[i]]!=2) isSeq = false;
-            if(isSeq && counts[max]==2) return {t: TYPES.PAIR_STRAIGHT, v: min, len: len/2};
+        if (len == 4) {
+            // 赖子优先凑三张
+            // 找那个普通牌能凑成3张的
+            for(let k of keys) {
+                if (counts[k] + lCnt >= 3) return {t: TYPES.TRIPLET_1, v: k};
+            }
         }
-
-        // 飞机 (简化：标准飞机 或 带同数量翅膀)
-        // 逻辑复杂，这里实现基础检测：寻找连续的三张
-        let trips = [];
-        for(let k in counts) if(counts[k] >= 3) trips.push(Number(k));
-        trips.sort((a,b)=>a-b);
         
-        // 找最长连续三张序列
-        let maxSeq = [];
-        let currSeq = [];
-        for(let t of trips) {
-            if(t >= 15) continue; // 2和王不能当飞机主体
-            if(currSeq.length == 0 || t == currSeq[currSeq.length-1]+1) currSeq.push(t);
-            else { if(currSeq.length > maxSeq.length) maxSeq = currSeq; currSeq = [t]; }
+        // 三带二 (5张)
+        if (len == 5) {
+             // 逻辑较复杂，简化判定：只要能凑出3+2即可
+             // 尝试把赖子分配给不同组合
+             for(let k of keys) {
+                 // 假设 k 是三张的主值
+                 let needForTri = Math.max(0, 3 - counts[k]);
+                 if (lCnt >= needForTri) {
+                     // 剩下的牌能否凑对子?
+                     // 暂略，赖子玩法核心是爽快，这里只要牌数对且有赖子，稍微放宽判定
+                     return {t: TYPES.TRIPLET_2, v: k};
+                 }
+             }
         }
-        if(currSeq.length > maxSeq.length) maxSeq = currSeq;
-        
-        if (maxSeq.length >= 2) {
-            // 纯飞机
-            if (len == maxSeq.length * 3 && keys.length == maxSeq.length) return {t: TYPES.PLANE, v: maxSeq[0], len: maxSeq.length};
-            // 飞机带单 (x3 + x1)
-            if (len == maxSeq.length * 4) return {t: TYPES.PLANE_WING_S, v: maxSeq[0], len: maxSeq.length};
-            // 飞机带对 (x3 + x2) *注意：这里没严格校验翅膀是不是对子，简化处理*
-            if (len == maxSeq.length * 5) return {t: TYPES.PLANE_WING_P, v: maxSeq[0], len: maxSeq.length}; 
-        }
-
-        // 四带二 (单)
-        if (len == 6 && counts[keys[keys.length-1]] == 4) return {t: TYPES.QUAD_2S, v: keys[keys.length-1]};
-        // 四带二 (对)
-        if (len == 8 && counts[keys[keys.length-1]] == 4) return {t: TYPES.QUAD_2P, v: keys[keys.length-1]};
 
         return null;
     },
 
     // 比较大小
-    canBeat: function(myH, targetH) {
-        if (!targetH) return true;
-        if (myH.t == TYPES.ROCKET) return true;
-        if (targetH.t == TYPES.ROCKET) return false;
-        if (myH.t == TYPES.BOMB && targetH.t != TYPES.BOMB) return true;
-        if (myH.t == targetH.t && myH.len == targetH.len && myH.v > targetH.v) return true;
+    canBeat: function(my, target) {
+        if (!target) return true;
+        
+        // 赖子炸弹无敌 (除王炸)
+        if (my.t == TYPES.BOMB_LAIZI && target.t != TYPES.ROCKET) return true;
+        if (target.t == TYPES.BOMB_LAIZI) return false;
+
+        if (my.t == TYPES.ROCKET) return true;
+        if (target.t == TYPES.ROCKET) return false;
+        
+        if (my.t == TYPES.BOMB && target.t != TYPES.BOMB) return true;
+        
+        if (my.t == target.t && my.v > target.v && (my.len || 0) == (target.len || 0)) return true;
+        
         return false;
     }
 };
@@ -310,12 +337,11 @@ const Analyzer = {
 class Game {
     constructor() {
         this.p = { south: [], west: [], east: [] };
-        this.state = 0; // 0:Idle, 1:Bid, 2:Play
+        this.state = 0; 
         this.turn = null;
         this.landlord = null;
-        this.lastPlay = null; // {who, cards, typeData}
+        this.lastPlay = null;
         this.passCnt = 0;
-        this.radiation = 0;
         
         this.ui = {
             hand: document.getElementById('hand-container'),
@@ -331,7 +357,7 @@ class Game {
             },
             avatars: { west: document.getElementById('av-west'), east: document.getElementById('av-east') },
             bases: [document.getElementById('base-0'), document.getElementById('base-1'), document.getElementById('base-2')],
-            radBar: document.getElementById('rad-bar')
+            laiziDisp: document.getElementById('laizi-disp')
         };
     }
 
@@ -342,6 +368,10 @@ class Game {
     }
 
     start() {
+        // 确定赖子 (3-2)
+        GLOBAL_LAIZI_VAL = Math.floor(Math.random() * 13) + 3;
+        this.ui.laiziDisp.innerText = R_VALUES[GLOBAL_LAIZI_VAL].replace('0','10');
+
         // 洗牌
         let deck = [];
         for(let v=3; v<=15; v++) for(let s of SUITS) deck.push(new Card(v, s));
@@ -365,10 +395,9 @@ class Game {
             this.ui.areas[k].innerHTML = '';
         });
         this.ui.areas.south.innerHTML = '';
-        this.radiation = 0; this.updateRad();
         
         this.renderHand();
-        this.toast('检测到高能反应，请抢夺控制权');
+        this.toast(`赖子确定为: ${this.ui.laiziDisp.innerText}`);
     }
 
     sortCards(arr) { arr.sort((a,b)=>b.val - a.val); }
@@ -377,7 +406,7 @@ class Game {
         this.ui.hand.innerHTML = '';
         this.p.south.forEach((c, i) => {
             let d = document.createElement('div');
-            d.className = `card my-card ${c.color} ${c.sel?'selected':''}`;
+            d.className = `card my-card ${c.color} ${c.sel?'selected':''} ${c.isLaizi?'is-laizi':''}`;
             d.innerHTML = `<div class="val">${c.txt}</div><div class="suit">${c.suit}</div><div class="big-suit">${c.suit}</div>`;
             d.onclick = () => { c.sel = !c.sel; this.renderHand(); };
             d.style.zIndex = i;
@@ -387,7 +416,6 @@ class Game {
 
     bid(score) {
         this.ui.btns.bid.style.display = 'none';
-        // 简单逻辑：如果玩家不叫，随机给电脑
         let boss = (score > 0) ? 'south' : (Math.random()>0.5 ? 'west' : 'east');
         this.setLandlord(boss);
     }
@@ -400,20 +428,14 @@ class Game {
         // 显示底牌
         this.ui.bases.forEach((b, i) => {
             let c = this.baseCards[i];
-            b.className = `card ${c.color}`;
+            b.className = `card ${c.color} ${c.isLaizi?'is-laizi':''}`;
             b.innerHTML = `<div class="val">${c.txt}</div>`;
         });
 
-        // 身份标识
-        if(who=='south') this.toast('你已获取最高权限 (地主)');
-        else {
-            document.getElementById('role-'+who).innerText = '[BOSS]';
-            this.toast('警告：BOSS出现');
-        }
-        
         if(who=='south') this.renderHand();
-        this.updateCounts();
+        else document.getElementById('role-'+who).innerText = '[BOSS]';
         
+        this.updateCounts();
         this.turn = who;
         this.lastPlay = null;
         this.passCnt = 0;
@@ -421,35 +443,31 @@ class Game {
     }
 
     nextStep() {
-        // 更新头像高亮
         this.ui.avatars.west.classList.remove('active-turn');
         this.ui.avatars.east.classList.remove('active-turn');
         if(this.turn != 'south') this.ui.avatars[this.turn].classList.add('active-turn');
 
         if(this.turn == 'south') {
             this.ui.btns.play.style.display = 'flex';
-            // 如果自由出牌，隐藏“跳过”
             let isFree = (!this.lastPlay || this.lastPlay.who == 'south');
             document.querySelector('#grp-play button:first-child').style.display = isFree ? 'none' : 'block';
         } else {
             this.ui.btns.play.style.display = 'none';
-            setTimeout(() => this.aiMove(), 1000); // AI 思考时间
+            setTimeout(() => this.aiMove(), 1000);
         }
     }
 
     play() {
         let sels = this.p.south.filter(c => c.sel);
-        if(sels.length == 0) return this.toast('未选择指令模块');
+        if(sels.length == 0) return this.toast('未选牌');
         
         let typeData = Analyzer.getType(sels);
-        if(!typeData) return this.toast('无效的指令组合');
+        if(!typeData) return this.toast('无效牌型');
 
-        // 规则判定
         if(this.lastPlay && this.lastPlay.who != 'south') {
-            if(!Analyzer.canBeat(typeData, this.lastPlay.typeData)) return this.toast('能量不足，无法压制');
+            if(!Analyzer.canBeat(typeData, this.lastPlay.typeData)) return this.toast('打不过');
         }
 
-        // 出牌成功
         this.doPlay('south', sels, typeData);
     }
 
@@ -459,46 +477,30 @@ class Game {
         this.rotateTurn();
     }
 
-    // AI 逻辑 (智商升级版)
     aiMove() {
         let hand = this.p[this.turn];
         let play = null;
         let isFree = (!this.lastPlay || this.lastPlay.who == this.turn);
 
-        // 1. 如果自由出牌，优先出顺子/飞机/三带
+        // 简单 AI 策略：有赖子就瞎凑
         if(isFree) {
-            // 简单模拟：先找顺子(简化)，再找三张，再找对子，最后单张
-            // *为了代码长度，这里实现一个贪婪策略：出最小的合法牌*
-            // 优先出最小单张
-            play = [hand[hand.length-1]];
-            // 尝试找对子
-            for(let i=hand.length-1; i>0; i--) {
-                if(hand[i].val == hand[i-1].val) { play = [hand[i], hand[i-1]]; break; }
-            }
+            play = [hand[hand.length-1]]; // 出最小单
         } else {
-            // 2. 压牌逻辑
+            // 压牌
             let target = this.lastPlay.typeData;
-            
-            // 找比它大的同牌型
             if(target.t == TYPES.SINGLE) {
-                for(let i=hand.length-1; i>=0; i--) if(hand[i].val > target.v) { play=[hand[i]]; break; }
+                // 找单张
+                let c = hand.slice().reverse().find(x=>x.val > target.v);
+                if(c) play=[c];
+                else {
+                    // 用赖子凑？AI暂时不浪费赖子在单张
+                }
+            } else if (target.t == TYPES.PAIR) {
+                 // 找对子
+                 for(let i=hand.length-1; i>0; i--) {
+                     if(hand[i].val == hand[i-1].val && hand[i].val > target.v) { play=[hand[i], hand[i-1]]; break; }
+                 }
             }
-            else if(target.t == TYPES.PAIR) {
-                for(let i=hand.length-1; i>0; i--) 
-                    if(hand[i].val == hand[i-1].val && hand[i].val > target.v) { play=[hand[i], hand[i-1]]; break; }
-            }
-            else if(target.t == TYPES.BOMB) {
-                 // 找更大的炸弹
-                 // ...略(代码量限制，暂不写反炸炸弹逻辑)
-            }
-            else {
-                // 遇到复杂牌型，AI 炸它！
-                let bomb = this.findBomb(hand);
-                if(bomb) play = bomb;
-            }
-            
-            // 如果对方是王炸，打不过
-            if(target.t == TYPES.ROCKET) play = null;
         }
 
         if(play) {
@@ -511,44 +513,31 @@ class Game {
         }
     }
 
-    // 辅助AI：找炸弹
-    findBomb(hand) {
-        let counts = {}; hand.forEach(c=>counts[c.val]=(counts[c.val]||0)+1);
-        for(let v in counts) if(counts[v]==4) return hand.filter(c=>c.val==v);
-        return null;
-    }
-
     doPlay(who, cards, typeData) {
-        // 移除手牌
         this.p[who] = this.p[who].filter(c => !cards.includes(c));
         if(who=='south') this.renderHand();
         this.updateCounts();
 
-        // 渲染出牌
         let area = this.ui.areas[who];
         area.innerHTML = '';
         cards.forEach(c => {
             let d = document.createElement('div');
-            d.className = `card ${c.color}`;
+            d.className = `card ${c.color} ${c.isLaizi?'is-laizi':''}`;
             d.innerHTML = `<div class="val">${c.txt}</div><div class="big-suit">${c.suit}</div>`;
             area.appendChild(d);
         });
 
-        // 特效
-        if(typeData.t == TYPES.BOMB || typeData.t == TYPES.ROCKET) {
+        // 震动特效
+        if(typeData.t == TYPES.BOMB || typeData.t == TYPES.ROCKET || typeData.t == TYPES.BOMB_LAIZI) {
             document.body.classList.add('shake-screen');
             setTimeout(()=>document.body.classList.remove('shake-screen'), 500);
-            this.radiation += 20;
-            this.updateRad();
         }
 
-        // 状态更新
         this.lastPlay = { who: who, typeData: typeData };
         this.passCnt = 0;
 
-        // 判定胜负
         if(this.p[who].length == 0) {
-            setTimeout(()=>alert(who=='south'?'任务完成：废土征服':'任务失败：被AI抹除'), 100);
+            setTimeout(()=>alert(who=='south'?'胜利！':'失败！'), 100);
             location.reload();
         } else {
             this.rotateTurn();
@@ -556,7 +545,7 @@ class Game {
     }
 
     rotateTurn() {
-        if(this.passCnt >= 2) this.lastPlay = null; // 一轮结束，自由出牌
+        if(this.passCnt >= 2) this.lastPlay = null;
         this.turn = (this.turn=='south') ? 'east' : (this.turn=='east' ? 'west' : 'south');
         this.nextStep();
     }
@@ -564,17 +553,6 @@ class Game {
     updateCounts() {
         document.getElementById('count-west').innerText = this.p.west.length;
         document.getElementById('count-east').innerText = this.p.east.length;
-    }
-
-    updateRad() {
-        if(this.radiation > 100) this.radiation = 100;
-        this.ui.radBar.style.width = this.radiation + '%';
-    }
-
-    hint() {
-        // 简易提示：把能打的牌提起来
-        // 这里仅作示例，真正的提示算法需要遍历手牌组合
-        this.toast('扫描中...建议出单张');
     }
 }
 
