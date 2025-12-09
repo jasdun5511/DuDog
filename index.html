@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>斗地主：赖子核爆版 (V8)</title>
+    <title>逗地主</title>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -88,7 +88,7 @@
             border: 1px solid var(--neon-blue);
             display: flex; justify-content: center; align-items: center;
         }
-        .card.back::after { content: '☢'; font-size: 24px; color: var(--hazard); opacity: 0.5; }
+        .card.back::after { content: '🐷'; font-size: 24px; color: var(--hazard); opacity: 0.5; }
         
         /* 赖子牌特效 */
         .card.is-laizi {
@@ -173,12 +173,12 @@
 
         <div class="avatar left" id="av-west">
             <div class="role" id="role-west"></div>
-            <div>废土行者 L</div>
+            <div>🐴</div>
             <div class="count" id="count-west">17</div>
         </div>
         <div class="avatar right" id="av-east">
             <div class="role" id="role-east"></div>
-            <div>废土行者 R</div>
+            <div>🐮 R</div>
             <div class="count" id="count-east">17</div>
         </div>
 
@@ -192,7 +192,7 @@
             <div id="grp-start"><button class="btn primary" onclick="game.start()">初始化系统</button></div>
             <div id="grp-bid" style="display:none">
                 <button class="btn" onclick="game.bid(0)">放弃</button>
-                <button class="btn primary" onclick="game.bid(3)">夺取权限</button>
+                <button class="btn primary" onclick="game.bid(3)">叫地主</button>
             </div>
             <div id="grp-play" style="display:none">
                 <button class="btn" onclick="game.pass()">跳过</button>
